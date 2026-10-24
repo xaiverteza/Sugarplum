@@ -1,10 +1,10 @@
-
 name: Build Sugarplum APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -14,8 +14,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get project
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Find Gradle wrapper
+        id: project
+        shell: bash
+        run: |
+          echo "Searching for gradlew..."
+          WRAPPER="$(find . -type f -name gradlew \
+            -not -path './.git/*' | head -n 1)"
+
+          if [ -z "$WRAPPER" ]; then
+            echo "ERROR: gradlew was not found."
+            echo "Repository files:"
+            find . -maxdepth 4 -type f | sort | head -n 200
+            exit 1
+          fi
+
+          PROJECT_DIR="$(dirname "$WRAPPER")"
+          echo "Found wrapper: $WRAPPER"
+          echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -26,14 +45,18 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build APK
+      - name: Build debug APK
+        shell: bash
         run: |
+          cd "${{ steps.project.outputs.project_dir }}"
           chmod +x gradlew
-          ./gradlew assembleDebug
+          bash gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Sugarplum-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: |
+            **/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+          retention-days: 7
