@@ -1,15 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <application
+        android:allowBackup="true"
         android:label="Sugarplum"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:supportsRtl="true">
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".MusicListenerService"
+            android:label="Sugarplum music detection"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService"/>
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".SmallMusicWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/small_music_widget_info"/>
+        </receiver>
+
+        <receiver
+            android:name=".LargeMusicWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/large_music_widget_info"/>
+        </receiver>
+
+        <receiver
+            android:name=".WidgetActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.sugarplum.music.PLAY_PAUSE"/>
+                <action android:name="com.sugarplum.music.NEXT"/>
+                <action android:name="com.sugarplum.music.PREVIOUS"/>
+                <action android:name="com.sugarplum.music.REFRESH"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>
