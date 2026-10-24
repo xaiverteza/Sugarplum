@@ -32,10 +32,28 @@ jobs:
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.13
 
+      - name: Diagnose Android Manifest
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          path = "app/src/main/AndroidManifest.xml"
+          print("MANIFEST CONTENTS:")
+          with open(path, "rb") as f:
+              data = f.read()
+          print(data.decode("utf-8", errors="replace"))
+          try:
+              ET.fromstring(data)
+              print("XML syntax is valid.")
+          except ET.ParseError as e:
+              print("XML PARSE ERROR:", e)
+              raise
+          PY
+
       - name: Build debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Sugarplum-debug-apk
